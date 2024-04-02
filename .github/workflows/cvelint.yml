@@ -10,7 +10,7 @@ on:
 # This job installs dependencies, builds the book, and pushes it to `gh-pages`
 jobs:
   CVE-Lint:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
 
@@ -19,21 +19,21 @@ jobs:
     - name: Install CVELINT
       run: |
         wget https://github.com/mprpic/cvelint/releases/latest/download/cvelint_Linux_x86_64.tar.gz
-          tar -xvf cvelint_Linux_x86_64.tar.gz
-          chmod +x cvelint
-          ./cvelint -h
+        tar -xvf cvelint_Linux_x86_64.tar.gz
+        chmod +x cvelint
+        ./cvelint -h
         
     - name: Grab Needed Data
       run: |
-        wget https://github.com/CVEProject/cvelistV5/archive/refs/heads/main.tar.gz
-          mkdir -p cvelistV5 && tar xzf main.tar.gz --strip-component=1 --directory=./cvelistV5
+        git clone https://github.com/CVEProject/cvelistV5 
          
     - name: Run CVELINT
       env:
         GH_TOKEN:  ${{ secrets.GH_TOKEN }}
       run: |
-          ./cvelint -format csv ./cvelistV5/cves > CVEV5Errors.csv 2>/dev/null
-          ./cvelint -format json ./cvelistV5/cves > CVEV5Errors.json 2>/dev/null
+          ./cvelint -format csv ./cvelistV5/cves > CVEV5Errors.csv
+          ./cvelint -format json ./cvelistV5/cves > CVEV5Errors.json
+      continue-on-error: true
 
     - name: Commit changes
       uses: EndBug/add-and-commit@v9
@@ -42,4 +42,3 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-
